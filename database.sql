@@ -1,0 +1,54 @@
+CREATE DATABASE IF NOT EXISTS pinjaman_koperasi
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE pinjaman_koperasi;
+
+CREATE TABLE IF NOT EXISTS users (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  username VARCHAR(60) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role ENUM('admin','petugas') NOT NULL DEFAULT 'admin',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS borrowers (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(30) NOT NULL UNIQUE,
+  name VARCHAR(150) NOT NULL,
+  phone VARCHAR(30) DEFAULT NULL,
+  address TEXT DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS loans (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  borrower_id INT UNSIGNED NOT NULL,
+  loan_code VARCHAR(30) NOT NULL UNIQUE,
+  principal DECIMAL(15,2) NOT NULL,
+  interest_percent DECIMAL(6,2) NOT NULL DEFAULT 0,
+  interest_amount DECIMAL(15,2) NOT NULL,
+  total_due DECIMAL(15,2) NOT NULL,
+  loan_date DATE NOT NULL,
+  due_date DATE NOT NULL,
+  notes TEXT DEFAULT NULL,
+  created_by INT UNSIGNED DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_loan_borrower FOREIGN KEY (borrower_id) REFERENCES borrowers(id),
+  CONSTRAINT fk_loan_user FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS payments (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  loan_id INT UNSIGNED NOT NULL,
+  payment_code VARCHAR(30) NOT NULL UNIQUE,
+  amount DECIMAL(15,2) NOT NULL,
+  payment_date DATE NOT NULL,
+  notes VARCHAR(255) DEFAULT NULL,
+  created_by INT UNSIGNED DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_payment_loan FOREIGN KEY (loan_id) REFERENCES loans(id),
+  CONSTRAINT fk_payment_user FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_loans_due_date ON loans(due_date);
+CREATE INDEX idx_payments_loan ON payments(loan_id);

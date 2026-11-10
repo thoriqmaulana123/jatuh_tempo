@@ -1,0 +1,5 @@
+<?php
+require_once __DIR__.'/functions.php';require_login();$pageTitle='Pembayaran';
+$rows=$pdo->query('SELECT p.*,l.loan_code,b.name borrower FROM payments p JOIN loans l ON l.id=p.loan_id JOIN borrowers b ON b.id=l.borrower_id ORDER BY p.payment_date DESC,p.id DESC LIMIT 200')->fetchAll();require 'header.php';?>
+<section class="panel"><div class="panelhead"><h2>Riwayat pembayaran (200 terbaru)</h2><a class="btn" href="loans.php">Pilih pinjaman</a></div><div class="tablewrap"><table><tr><th>Kode</th><th>Kode pinjaman</th><th>Peminjam</th><th>Tanggal</th><th>Jumlah</th><th></th></tr><?php foreach($rows as $r):?><tr><td><?=e($r['payment_code'])?></td><td><?=e($r['loan_code'])?></td><td><?=e($r['borrower'])?></td><td><?=date('d/m/Y',strtotime($r['payment_date']))?></td><td><?=rupiah($r['amount'])?></td><td><a target="_blank" href="receipt.php?id=<?=$r['id']?>">Cetak bukti</a></td></tr><?php endforeach;?><?php if(!$rows):?><tr><td colspan="6" class="empty">Belum ada pembayaran.</td></tr><?php endif;?></table></div></section>
+<?php require 'footer.php';?>
